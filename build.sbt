@@ -9,5 +9,6 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-sql" % "2.3.1",
   "org.apache.spark" %% "spark-mllib" % "2.3.1",
   "org.apache.spark" %% "spark-streaming" % "2.3.1",
-  "org.apache.spark" %% "spark-hive" % "2.3.1"
+  "org.apache.spark" %% "spark-hive" % "2.3.1",
+  "com.databricks" % "spark-csv_2.11" % "1.2.0"
 )
