@@ -1,6 +1,7 @@
 package org.ermain.scala.spark.allstate_datat_analysis
 
-import org.apache.spark.ml.feature.{StringIndexer, VectorAssembler}
+import org.apache.spark.ml.feature.{StringIndexer, StringIndexerModel}
+import org.apache.spark.ml.feature.VectorAssembler
 
 object Data_Preprocessing {
 
@@ -20,7 +21,7 @@ object Data_Preprocessing {
     .option("inferSchema", "true")
     .format("com.databricks.spark.csv")
     .load(train)
-    .cache()
+    .cache
 
   // Load and format the testing data
   val testInput = spark.read
@@ -28,7 +29,7 @@ object Data_Preprocessing {
     .option("inferSchema", "true")
     .format("com.databricks.spark.csv")
     .load(test)
-    .cache()
+    .cache
 
   println("Preparing data for training model")
 
@@ -46,13 +47,14 @@ object Data_Preprocessing {
   }
 
   val seed = 12345L
-  val splits = data.randomSplit(Array(0.85, 0.15), seed)
+  val splits = data.randomSplit(Array(0.75, 0.25), seed)
   val (trainingData, validationData) = (splits(0), splits(1))
 
   // Cache th data for faster in-memory processing
-  trainingData.cache()
-  validationData.cache()
+  trainingData.cache
+  validationData.cache
 
+  val testData = testInput.sample(false, testSample).cache
 
   def isCategory(s: String): Boolean = s.startsWith("cat")
   def categoryNewColumn(s: String): String = {
@@ -64,24 +66,24 @@ object Data_Preprocessing {
   }
 
   // This function removes certain categories that are unnecessary for the model
-  def removeCategory(s: String): Boolean = {
-    ! (s matches "cat(109$|110$|112$|113$|116$)" )
+  def removeTooManyCategories(s: String): Boolean = {
+    !(s matches "cat(109$|110$|112$|113$|116$)" )
   }
 
   // Now we select the feature columns
-  def selectFeatureColumns(s: String): Boolean = {
+  def onlyFeatureColumns(s: String): Boolean = {
     !(s matches "id|label")
   }
 
   // We now define the set feature columns
   val featureCols = trainingData.columns
-    .filter(removeCategory)
-    .filter(selectFeatureColumns)
+    .filter(removeTooManyCategories)
+    .filter(onlyFeatureColumns)
     .map(categoryNewColumn)
 
   // We use the string indexer for type String categorical columns
-  val stringIndexer = trainingData.columns.filter(isCategory)
-    .map(s  => new StringIndexer()
+  val stringIndexerStages = trainingData.columns.filter(isCategory)
+      .map(s => new StringIndexer()
       .setInputCol(s)
       .setOutputCol(categoryNewColumn(s))
       .fit(trainInput.select(s).union(testInput.select(s))))
