@@ -81,13 +81,6 @@ object Data_Preprocessing {
     .filter(onlyFeatureColumns)
     .map(categoryNewColumn)
 
-  // We use the string indexer for type String categorical columns
-  val stringIndexerStages = trainingData.columns.filter(isCategory)
-      .map(s => new StringIndexer()
-      .setInputCol(s)
-      .setOutputCol(categoryNewColumn(s))
-      .fit(trainInput.select(s).union(testInput.select(s))))
-
   // Use the VectorAssembler for training features
   val assembly = new VectorAssembler()
     .setInputCols(featureCols)

@@ -16,5 +16,17 @@ object EDA {
 
     println(df)
     println(df.printSchema())
+
+    val newDF = df.withColumnRenamed("loss", "label")
+    newDF.createOrReplaceTempView("insurance")
+
+    println("Average Loss per insurance claim")
+    spark.sql("SELECT avg(insurance.label) as Average_Loss FROM insurance").show()
+
+    println("Minimum Loss per insurance claim")
+    spark.sql("SELECT min(insurance.label) as Min_Loss FROM insurance").show()
+
+    println("Maximum Loss from each insurance claim")
+    spark.sql("SELECT max(insurance.label) as Max_Loss FROM insurance").show()
   }
 }
